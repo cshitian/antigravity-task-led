@@ -185,3 +185,192 @@
 感谢 **LinuxDo** 社区的支持！
 
 [![LinuxDo](https://img.shields.io/badge/社区-LinuxDo-blue?style=for-the-badge)](https://linux.do/)
+
+---
+
+# 🌌 Antigravity Task LED (English)
+> **When your AI thinks, your desktop breathes.**  
+> An IoT system that maps AI agent states in Antigravity IDE to physical dual-color LED lighting on your desk in real-time.
+
+---
+
+## 📖 Project Overview
+
+**Antigravity Task LED** is a geek-oriented physical desktop linkage system. It captures the real-time generation status of the AI assistant in Antigravity IDE (or VS Code), pushes it to the **Bemfa IoT cloud platform** via lightweight HTTP API, and broadcasts it through MQTT to an **ESP8266 microcontroller** on your desk—driving red and green LEDs through 19 stunning non-blocking creative lighting patterns.
+
+From immersive Tai-Chi breathing to dynamic radar scanning, police strobe, and medical ECG simulation, your AI's state comes to life physically on your desk.
+
+---
+
+## 🎨 Core LED Pattern Mapping
+
+The system natively supports 19 non-blocking LED patterns. Here are the recommended three core state mappings:
+
+| AI State | Recommended Pattern | Visual Effect | Design Philosophy |
+| :--- | :--- | :--- | :--- |
+| 🧠 **Generating** | `10` **Alternating Breathing** | Green & red LEDs smoothly fade in/out, alternating | Simulates the AI brain processing and deep thinking |
+| ✅ **Success** | `16` **Tai-Chi Breathing** | Dual-LED $y=\sin^3(x)$ third-order S-curve blending | Yin-Yang harmony, symbolizing perfect code completion |
+| ❌ **Error** | `5` **Red Constant On** | Green off, red stays lit | Strong alert signal to grab your attention |
+
+### 📸 Hardware Preview
+
+| 🟢 Green LED On | 💤 Both Off |
+| :---: | :---: |
+| ![Green LED](./2.jpg) | ![Both Off](./1.jpg) |
+
+---
+
+## 🏗️ System Architecture
+
+The system consists of three parts: **editor plugin**, **cloud relay**, and **hardware terminal**:
+
+```
+┌─────────────────────────────────┐
+│  Antigravity IDE / VS Code      │  ◄─── CDP monitor for AI state
+│  (antigravity-task-led plugin)  │
+└────────────────┬────────────────┘
+                 │
+                 │ Lightweight HTTP POST / GET
+                 ▼
+┌─────────────────────────────────┐
+│      Bemfa IoT Cloud            │  ◄─── HTTP → MQTT relay
+│      (bemfa.com)                │
+└────────────────┬────────────────┘
+                 │
+                 │ Real-time MQTT subscription (QoS 0)
+                 ▼
+┌─────────────────────────────────┐
+│   ESP8266 Microcontroller       │  ◄─── millis()-based non-blocking FSM
+│   [D1 Green]   [D2 Red]         │       19 LED patterns, zero-lag switching
+└─────────────────────────────────┘
+```
+
+---
+
+## 📁 Directory Structure
+
+```
+.
+├── antigravity-task-led/     # Plugin source code (CDP monitor, Bemfa HTTP push)
+│   ├── src/                  # Core logic
+│   ├── package.json          # Plugin config
+│   └── README.md             # Plugin-specific docs
+│
+├── sketch_may25a/            # ESP8266 Arduino firmware
+│   ├── sketch_may25a.ino     # 580+ lines non-blocking FSM (19 patterns, WiFi/MQTT auto-reconnect)
+│   └── secrets.h.example     # Credential config template (WiFi & Bemfa UID isolation)
+│
+└── README.md                 # This file (project overview)
+```
+
+---
+
+## 🔌 Hardware Setup & Wiring
+
+### 1. Materials Needed
+* **ESP8266 board** (NodeMCU / D1 Mini) x1
+* **Red & Green dual-color LED** (or common-cathode RGB LED) x1
+* **220Ω current-limiting resistors** x2
+* **Breadboard & jumper wires**
+
+### 2. Wiring Table (Active HIGH — GPIO HIGH = LED on)
+
+| Component | LED Pin | Connect To (Dev Board) | GPIO | Purpose |
+| :--- | :--- | :--- | :--- | :--- |
+| **🟢 Green LED** | Anode (long leg) | **`D1`** (via 220Ω) | `GPIO5` | Generating / online status |
+| **🔴 Red LED** | Anode (long leg) | **`D2`** (via 220Ω) | `GPIO4` | Error / alert status |
+| **🔌 Common Ground** | Cathode (short leg) | **`GND`** | `GND` | Circuit reference |
+
+---
+
+## 🚀 Quick Start
+
+### Step 1: Flash ESP8266 Firmware
+
+1. Install **Arduino IDE** with ESP8266 board support.
+2. Install **PubSubClient** library via Arduino Library Manager.
+3. Open [sketch_may25a](./sketch_may25a):
+   * Copy `secrets.h.example` → `secrets.h`.
+   * Edit `secrets.h` with your WiFi credentials and your Bemfa **UID** (from [bemfa.com](https://bemfa.com)):
+     ```cpp
+     #define SECRET_WIFI_SSID "YOUR_WIFI_SSID"
+     #define SECRET_WIFI_PASS "YOUR_WIFI_PASSWORD"
+     #define SECRET_BEMFA_UID "YOUR_32_BIT_BEMFA_UID"
+     ```
+   * Open `sketch_may25a.ino`, set your control topic (e.g. ending in `002`):
+     ```cpp
+     const char* topic_control = "YOUR_TOPIC002";
+     ```
+4. Connect the board via USB, select the correct board/port in Arduino IDE, click **Upload**.
+5. Open Serial Monitor (baud `115200`) to verify WiFi & MQTT connection.
+
+---
+
+### Step 2: Install & Configure the Plugin
+
+1. Go to [antigravity-task-led](./antigravity-task-led):
+   ```bash
+   cd antigravity-task-led
+   npm install
+   npm run package  # Generate .vsix
+   ```
+2. In Antigravity IDE / VS Code, open Extensions (`Ctrl+Shift+X`), click `...` menu, select **"Install from VSIX..."**, pick the generated `.vsix`.
+3. Reload window (`Ctrl+Shift+P` → `Developer: Reload Window`).
+4. In IDE settings, configure:
+   * **Bemfa UID**: Your 32-bit private key.
+   * **MQTT Topic**: Your device topic (e.g. `your_topic002`).
+   * **State mapping**: Map `Generating`, `Success`, `Error` to desired pattern IDs (e.g. `10`, `16`, `5`).
+
+Config UI reference:
+
+![Plugin config](./3.png)
+
+---
+
+## 🛠️ Full 19-Pattern Reference
+
+Send commands `0`–`18` via Bemfa, or `i<milliseconds>` (e.g. `i300`) for dynamic frequency control:
+
+* `0`: **Both Off** — Silent sleep
+* `1`: **Both Flash** — Basic synchronous blink
+* `2`: **Green Flash, Red Off** — Single LED hint
+* `3`: **Red Flash, Green Off** — Error hint
+* `4`: **Green On, Red Off** — Safe/idle
+* `5`: **Red On, Green Off** — Error/warning
+* `6`: **Both On** — Full brightness
+* `7`: **Police Alternate Flash** — Strong alert
+* `8`: **Heartbeat Pulse** — Dual-LED heartbeat simulation
+* `9`: **SOS Morse** — International distress signal (···---···)
+* `10`: **Alternating Breathing** — High-precision PWM smooth breathing
+* `11`: **Firefly Chaos** — Dual independent async sine waves
+* `12`: **ECG Wave Simulation** — Red LED clones ECG waveform (P wave, QRS peak, T wave)
+* `13`: **Tick-Tock Guard** — Green steady, red 50ms pulse every second
+* `14`: **Phase Chase** — Green sine, red cosine, 90° phase shift
+* `15`: **Strobe Chase** — 3 green strobes → pause → 3 red strobes → pause
+* `16`: **Tai-Chi S-Curve** — $y = \sin^3(x)$, ultra-smooth third-order blending
+* `17`: **"HELLO" Morse Broadcast** — High-precision "H-E-L-L-O" Morse code sequence
+* `18`: **Radar Lock** — 3s green scan → 1s red rapid lock → 0.5s both-on lock confirmed
+
+---
+
+## 🔒 Security
+
+* **Zero hardcoded credentials**: Use `secrets.h` (gitignored) for local credential isolation. Safe to open-source on GitHub.
+* **Non-blocking reliability**: Hardware firmware contains zero `delay()` calls — fully event-driven with `millis()` timer slices for industrial-grade stability.
+
+---
+
+## 🤝 Credits & Contributing
+
+* Built on **Antigravity IDE**'s powerful AI development capabilities.
+* Thanks to **Bemfa IoT Platform** ([bemfa.com](https://bemfa.com)) for fast & stable cloud message relay.
+
+If you find this project enhances your desktop's tech vibe, give it a **⭐ Star**! Issues and creative pattern suggestions welcome.
+
+---
+
+## 🔗 Links
+
+Thanks to the **LinuxDo** community!
+
+[![LinuxDo](https://img.shields.io/badge/Community-LinuxDo-blue?style=for-the-badge)](https://linux.do/)
