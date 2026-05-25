@@ -1,0 +1,124 @@
+{
+  "name": "antigravity-task-led",
+  "displayName": "Antigravity Task LED",
+  "description": "Control physical LED lighting styles (Bemfa MQTT/HTTP) when Antigravity AI Agent completes a response.",
+  "version": "1.0.2",
+  "publisher": "cshitian",
+  "author": "cshitian",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/liukunpeng0316/antigravity-task-led"
+  },
+  "homepage": "https://github.com/liukunpeng0316/antigravity-task-led#readme",
+  "bugs": {
+    "url": "https://github.com/liukunpeng0316/antigravity-task-led/issues"
+  },
+  "keywords": [
+    "antigravity",
+    "ai",
+    "notification",
+    "led",
+    "iot",
+    "mqtt",
+    "agent"
+  ],
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "antigravityTaskLed.showMenu",
+        "title": "Antigravity Task LED: Settings Menu"
+      },
+      {
+        "command": "antigravityTaskLed.testLed",
+        "title": "Antigravity Task LED: Test LED Style"
+      },
+      {
+        "command": "antigravityTaskLed.toggle",
+        "title": "Antigravity Task LED: Toggle Linkage"
+      },
+      {
+        "command": "antigravityTaskLed.connectCdp",
+        "title": "Antigravity Task LED: Connect CDP"
+      }
+    ],
+    "configuration": {
+      "title": "Antigravity Task LED",
+      "properties": {
+        "antigravityTaskLed.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable/disable physical LED linkage control"
+        },
+        "antigravityTaskLed.bemfaUid": {
+          "type": "string",
+          "default": "",
+          "description": "Bemfa private key (UID) / 巴法云私钥"
+        },
+        "antigravityTaskLed.bemfaTopic": {
+          "type": "string",
+          "default": "",
+          "description": "Bemfa device topic (ends with 002) / 绑定的控制主题"
+        },
+        "antigravityTaskLed.modeGenerating": {
+          "type": "string",
+          "default": "10",
+          "description": "AI 正在生成回复时的物理灯语命令（0-18）"
+        },
+        "antigravityTaskLed.modeSuccess": {
+          "type": "string",
+          "default": "16",
+          "description": "AI 顺利完成回复时的物理灯语命令（0-18）"
+        },
+        "antigravityTaskLed.modeError": {
+          "type": "string",
+          "default": "5",
+          "description": "AI 执行出错或异常终止时的物理灯语命令（0-18）"
+        },
+        "antigravityTaskLed.cdpEnabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable CDP protocol to detect AI response status / 启用 CDP 精准检测 AI 响应状态"
+        },
+        "antigravityTaskLed.cdpPort": {
+          "type": "number",
+          "default": 9000,
+          "description": "Antigravity remote debugging port / Antigravity 远程调试端口"
+        },
+        "antigravityTaskLed.language": {
+          "type": "string",
+          "default": "zh-CN",
+          "enum": ["zh-CN", "en"],
+          "enumDescriptions": ["中文 (简体)", "English"],
+          "description": "UI language / 界面语言"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "package": "vsce package"
+  },
+  "dependencies": {
+    "ws": "^8.16.0"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.85.0",
+    "@types/node": "^20.0.0",
+    "@types/ws": "^8.5.10",
+    "typescript": "^5.3.0",
+    "@vscode/vsce": "^2.22.0"
+  }
+}

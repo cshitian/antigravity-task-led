@@ -1,0 +1,6 @@
+node_modules/
+out/
+*.vsix
+.vscode-test/
+test_cdp.js
+c d p _ t a r g e t s . j s o n
